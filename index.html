@@ -1,0 +1,233 @@
+<!-- 
+	HTML file for Mapbox web map that connects to a Google Sheet to load 
+	lat/long coordinates for point creation, as well as associated 
+	data that is loaded into the popups for the points.
+-->
+
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- insert map title here -->
+    <title>Disaffiliated Gyms</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v1.7.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v1.7.0/mapbox-gl.css" rel="stylesheet" />
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.5.1/tabletop.min.js'></script>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Montserrat Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+
+    <!-- Raleway Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Raleway&display=swap" rel="stylesheet">
+
+  </head>
+  <style>
+
+    body {
+      background: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+
+    #map {
+      position: absolute;
+      width: 98%;
+      height: 100%;
+      top: 0;
+      bottom: 0;
+    }
+
+    .marker {
+  background-image: url('marker-11.svg');
+  background-size: cover;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+    .mapboxgl-popup {
+      padding-bottom: 5px;
+    }
+
+    .mapboxgl-popup-close-button {
+      display: none;
+    }
+
+    .mapboxgl-popup-content {
+      font: 400 15px/22px Verdana, Geneva, sans-serif;
+      padding: 0;
+      width: 250px;
+    }
+
+    .mapboxgl-popup-content-wrapper {
+      padding: 5%;
+    }
+
+    .mapboxgl-popup-content h3 {
+      background: rgb(107, 5, 4);
+      text-align: center;
+      color: #fff;
+      margin: 0;
+      display: block;
+      font-family: 'Raleway', sans-serif;
+      padding: 15px;
+      font-weight: 700;
+      margin-top: -5px;
+    }
+
+    .mapboxgl-popup-content h4 {
+      color: #6B0504;
+      margin: 0;
+      display: block;
+      font-family: 'Montserrat', sans-serif;
+      padding: 3px 10px 0px 10px;
+      font-weight: 400;
+    }
+
+    .mapboxgl-popup-content h5 {
+      margin: 0;
+      display: block;
+      font-family: 'Montserrat', sans-serif;
+      padding: 3px 10px 3px 10px;
+      font-weight: 300;
+    }
+
+
+    .mapboxgl-container {
+      cursor: pointer;
+    }
+
+    .mapboxgl-popup-anchor-top>.mapboxgl-popup-content {
+      margin-top: 3px;
+    }
+
+    .mapboxgl-popup-anchor-top>.mapboxgl-popup-tip {
+      border-bottom-color: rgb(61, 59, 59);
+    }
+
+    a:link, a:visited {
+  color: #6B0504;
+  text-decoration: underline;
+  cursor: auto;}
+
+	a:hover {
+  cursor:pointer;}
+
+
+  </style>
+
+  <body>
+
+  	<!-- Add Mapbox map to Webpage (takes up the entire page)
+  	-->
+    <div id="map"></div>
+
+    <!-- Add semi-trasparent box to top of page as text background
+    -->
+	<div style="position: absolute; height: 110px; width: 100%; background-color: #000000; opacity: 0.75"></div>
+
+
+<!-- Add text to the Webpage
+    -->
+	<div style="position: fixed; overflow: auto; top: 5px; left: 50%; transform: translate(-50%); color: #fff; text-align: center; font-family: 'Montserrat', sans-serif; "><p style='font-size: 20px'>As of June 10, 2020 a total of <b>1170</b> gyms have disaffiliated from CrossFit, Inc.<br></p></div>
+	
+	
+
+	<div style="position:fixed; overflow: auto; bottom: 20px; left: 10px; color: #000000; text-align: left; font-family: 'Raleway', sans-serif; "><p style='font-size: 12px'><u><b>Note:</b></u> <br>
+	The data used to build this map is from <i>The Morning <br>Chalk Up</i>'s community survey which can be found <a href="https://docs.google.com/spreadsheets/d/16BB3tHLh1PyKM3r1RXJcvOZekylSZi5wOGCSOt7Q7UA/edit#gid=0" target="_blank"><b>HERE</b></a>.<br>This map will be periodically updated to refliect the <br>growing list of disaffiliated gyms.</p></div>
+
+
+    <!-- Add DSD logo to the top left of the Webpage (image hosted in Google Photos)
+    -->
+    <!-- <div style="position: absolute; top: 20px; left: 20px; width:400px; height: 100px; opacity: 0.75"><img src="https://lh3.googleusercontent.com/kiwQn7xobVfRi0xP8A8sdXyN6qrV6ENOeYLRwGGImCwpYKg2Hbvs9Xj4TPQAHUX4-0CsdncnmP8jcACY_xQGMRJZrOPMw235SlPzfPayv7Ys4A3nEFJTDq4XPRB2EJ15CWh-uPdy4PzoP742gIze1W9dpF-u9Cb6hnVhwcJwstqnXVI1TD7jS01qlcO8lLcBADN-ekMeRQbKHjHyOxu4TW6Ljf6r5jglHbQ2xcZsv23qohb9KxphG-jIqrMLQQuwzHV-XnNGs-Mznhe5eEaUI9AlDXtaJ2Dqz18wl5AHoGGs6IfhUMUjbK35oqrnmhpTaWJIrWn4Ut8RJ1IffiYB6_k6MS8_JBkuWrX_hQkBMt35lnZv0yvPCrUpJYc4PVch08iZiSgNHcAXtL1yUET0_R9DAjxGTt-RgjZ4nJ_fWvBKUT9FzC2EYi075KH1VHb9OzByh49q_82E5AerTbVmvi8p5qxSSF6y8kQqWJajjy_7OyIdNBxLNhInTgdNBRf3wTy7koAMv3JNUIT5Ejcjl10ayn-a5vxGBTnl_uwDIUH8dUaSPtPHTIGMHVJuya_WmJOSqeFmzmzW6vmAIUec2ARqI5xjt1BtLTFO0AA7uEmNLLsQvXvi-I4hcGdWxpo-KVUQtg4aDolBVkrGksjDVe8l2ngXAAu0Hp8Tjq5vJwlj8AixCPAMPC8uiSjkaw=w920-h230-no" alt="Digital Scholarship Day 2020 logo" width="400" height="100"> </div>
+    -->
+
+
+	
+
+	<!-- Mapbox code
+    -->
+    <script>
+      var transformRequest = (url, resourceType) => {
+        var isMapboxRequest =
+          url.slice(8, 22) === "api.mapbox.com" ||
+          url.slice(10, 26) === "tiles.mapbox.com";
+        return {
+          url: isMapboxRequest
+            ? url.replace("?", "?pluginName=sheetMapper&")
+            : url
+        };
+      };
+
+      // insert Mapbox API token below
+      mapboxgl.accessToken = 'pk.eyJ1IjoiZGIxMDEiLCJhIjoiY2sybTE1ZTRkMGQ1aDNjbTlrMjR1MXE2aCJ9.pU43e4_oKPdsSpD3o8ALJQ';
+      var map = new mapboxgl.Map({
+        container: 'map', // container id
+        // insert the code for the Mapbox map style you want to use below
+        // (https://docs.mapbox.com/api/maps/#styles)
+        style: "mapbox://styles/db101/ck8rm5grg17jw1ioyuiyp2tnl",
+        center: [0, 35], // starting map position [lng, lat]
+        zoom: 1.5, // starting zoom
+        transformRequest: transformRequest
+      });
+
+
+      map.on("load", function() {
+        init();
+      });
+
+      // Initialize Tabletop to access your table
+      function init() {
+        Tabletop.init({
+          // insert Google Spreehsheet link below
+          key: 'https://docs.google.com/spreadsheets/d/1LtstJxVn-EilezHp8fSTiOz1yrrnzblListlcADSPMY/edit?usp=sharing',
+          // once Tabletop has loaded the data, it passes it to the 'callback' function, 'addPoints', defined below
+          callback: addPoints,
+          simpleSheet: true
+        });
+      }
+
+
+
+      // create a function called addPoints that iterates through your table (row by row) to create markers and popups
+      function addPoints(data) {
+
+        // iterate through your table to set the marker to lat/long values for each row
+
+        data.forEach(function(row) {
+
+          // create a variable for your popup and populate your popup with information from your table
+          var popup = new mapboxgl.Popup()
+            .setHTML('<h3>' + row.Name + '</h3>' + '<h4>' + " " + '</h4>'); // use the table to populate your popup with text
+
+
+
+          // create a variable for your markup and add it to the map 
+          var marker = new mapboxgl.Marker({
+              color: '#6B0504'
+            })
+            .setLngLat([row.Longitude, row.Latitude])
+            .setPopup(popup)
+            .addTo(map); // add the marker to the map
+        
+
+
+
+	
+
+        });
+      }
+
+
+    </script>
+  </body>
+
+</html>
